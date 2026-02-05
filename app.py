@@ -27,8 +27,8 @@ try:
     # AJUSTE AQUI: Verifique se os nomes das colunas batem com sua planilha
     # Estou assumindo nomes genéricos, altere conforme sua planilha real
     col_setor = 'SETOR' 
-    col_grupo = 'GRUPO DE SERVIÇO' # Ou o nome que estiver na sua planilha
-    col_matricula = 'MATRICULA NOVA'
+    col_grupo = 'GRUPO' # Ou o nome que estiver na sua planilha
+    col_matricula = 'MAT.N'
     col_nome = 'NOME'
     col_posto = 'POSTO'
 
