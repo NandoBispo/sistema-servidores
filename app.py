@@ -202,97 +202,202 @@
 # #     st.error(f"Erro crítico: {e}")
 
 # ---------------------Versão 3 -----------------------------------
+# import streamlit as st
+# import pandas as pd
+# from streamlit_gsheets import GSheetsConnection
+
+# # --- CONFIGURAÇÃO E CONEXÃO ---
+# st.set_page_config(page_title="Sistema de Efetivo", layout="wide")
+# url_planilha = "https://docs.google.com/spreadsheets/d/1YO5e36Ql7n2SerjL1wO7ZQ33zK06Xhmt9fGwrwqjz3U/edit?gid=1377344967#gid=1377344967"
+
+# try:
+#     conn = st.connection("gsheets", type=GSheetsConnection)
+#     df = conn.read(spreadsheet=url_planilha, ttl=5)
+    
+#     # 1. Padronização de Colunas
+#     df.columns = df.columns.str.strip().str.upper()
+    
+#     col_setor = 'SETOR' 
+#     col_grupo = 'GRUPO' 
+#     col_matricula = 'MAT.N'
+#     col_nome = 'NOME'
+#     col_posto = 'POSTO'
+#     col_escala = 'ESCALA'
+
+#     # 2. Limpeza de dados
+#     colunas_foco = [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]
+#     for col in colunas_foco:
+#         df[col] = df[col].fillna("").astype(str).str.strip()
+
+#     # --- FILTRAGEM DINÂMICA NA BARRA LATERAL ---
+#     st.sidebar.header("⚙️ Filtros de Acesso")
+#     lista_setores = sorted(df[col_setor].unique())
+    
+#     setores_escolhidos = st.sidebar.multiselect(
+#         "Selecione o(s) Setor(es):",
+#         options=lista_setores,
+#         default=[s for s in ['ÁREA S4', 'CORPO DA GUARDA'] if s in lista_setores]
+#     )
+
+#     # Criamos o df_base que servirá para todos os filtros abaixo
+#     df_base = df[df[col_setor].isin(setores_escolhidos)].copy()
+
+#     # --- LÓGICA DE FILTRAGEM PERSONALIZADA (Ordem corrigida) ---
+    
+#     # Definimos a lista ANTES de usar no filtro (Resolve o erro que você teve)
+#     postos_supervisao = [
+#         "VTR DE APOIO - AS4", 
+#         "VTR DO ENCARREGADO - AS4", 
+#         "ENCARREGADO(A) - AS4", 
+#         "SUPERVISOR(A) CHS"
+#     ]
+
+#     # Agora sim aplicamos os filtros usando o df_base
+#     df_supervisao = df_base[df_base[col_posto].isin(postos_supervisao)]
+#     df_cg = df_base[df_base[col_setor] == "CORPO DA GUARDA"]
+#     df_12x60 = df_base[df_base[col_escala] == "12X60"]
+    
+#     # Filtros por Grupo
+#     df_alpha = df_base[df_base[col_grupo] == "A"]
+#     df_bravo = df_base[df_base[col_grupo] == "B"]
+#     df_charlie = df_base[df_base[col_grupo] == "C"]
+#     df_delta = df_base[df_base[col_grupo] == "D"]
+
+#     # --- INTERFACE EM ABAS ---
+#     st.title("🛡️ Gestão de Efetivo - Visualização Operacional")
+    
+#     nomes_abas = ["SUPERVISÃO", "CORPO DA GUARDA", "ESCALA 12X60", "ALPHA", "BRAVO", "CHARLIE", "DELTA"]
+#     abas = st.tabs(nomes_abas)
+
+#     mapa_dados = {
+#         "SUPERVISÃO": df_supervisao,
+#         "CORPO DA GUARDA": df_cg,
+#         "ESCALA 12X60": df_12x60,
+#         "ALPHA": df_alpha,
+#         "BRAVO": df_bravo,
+#         "CHARLIE": df_charlie,
+#         "DELTA": df_delta
+#     }
+
+#     for i, nome_aba in enumerate(nomes_abas):
+#         with abas[i]:
+#             dados_aba = mapa_dados[nome_aba]
+#             st.subheader(f"Efetivo: {nome_aba}")
+            
+#             if not dados_aba.empty:
+#                 st.dataframe(
+#                     dados_aba[[col_matricula, col_nome, col_posto, col_grupo, col_escala]], 
+#                     hide_index=True, 
+#                     use_container_width=True
+#                 )
+#                 st.caption(f"Total nesta guia: {len(dados_aba)} servidores")
+#             else:
+#                 st.info(f"Nenhum registro encontrado para {nome_aba} nos setores selecionados.")
+
+# except Exception as e:
+#     st.error(f"Erro ao processar filtros: {e}")
+
+# ---------------------Versão 4 -----------------------------------
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 
-# --- CONFIGURAÇÃO E CONEXÃO ---
+# --- CONFIGURAÇÃO ---
 st.set_page_config(page_title="Sistema de Efetivo", layout="wide")
-url_planilha = "https://docs.google.com/spreadsheets/d/1YO5e36Ql7n2SerjL1wO7ZQ33zK06Xhmt9fGwrwqjz3U/edit?gid=1377344967#gid=1377344967"
 
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
+    url_planilha = "https://docs.google.com/spreadsheets/d/1YO5e36Ql7n2SerjL1wO7ZQ33zK06Xhmt9fGwrwqjz3U/edit?gid=1377344967"
     df = conn.read(spreadsheet=url_planilha, ttl=5)
-    
-    # 1. Padronização de Colunas
+
+    # 1. PADRONIZAÇÃO DE COLUNAS
     df.columns = df.columns.str.strip().str.upper()
-    
-    col_setor = 'SETOR' 
-    col_grupo = 'GRUPO' 
-    col_matricula = 'MAT.N'
-    col_nome = 'NOME'
-    col_posto = 'POSTO'
-    col_escala = 'ESCALA'
 
-    # 2. Limpeza de dados
-    colunas_foco = [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]
-    for col in colunas_foco:
-        df[col] = df[col].fillna("").astype(str).str.strip()
-
-    # --- FILTRAGEM DINÂMICA NA BARRA LATERAL ---
-    st.sidebar.header("⚙️ Filtros de Acesso")
-    lista_setores = sorted(df[col_setor].unique())
-    
-    setores_escolhidos = st.sidebar.multiselect(
-        "Selecione o(s) Setor(es):",
-        options=lista_setores,
-        default=[s for s in ['ÁREA S4', 'CORPO DA GUARDA'] if s in lista_setores]
-    )
-
-    # Criamos o df_base que servirá para todos os filtros abaixo
-    df_base = df[df[col_setor].isin(setores_escolhidos)].copy()
-
-    # --- LÓGICA DE FILTRAGEM PERSONALIZADA (Ordem corrigida) ---
-    
-    # Definimos a lista ANTES de usar no filtro (Resolve o erro que você teve)
-    postos_supervisao = [
-        "VTR DE APOIO - AS4", 
-        "VTR DO ENCARREGADO - AS4", 
-        "ENCARREGADO(A) - AS4", 
-        "SUPERVISOR(A) CHS"
+    # Ordem das colunas que você solicitou para exibição
+    colunas_ordem = [
+        "MAT. A", "MAT. N", "NOME", "CELULAR", "SETOR", "POSTO", 
+        "MAT.A SUB", "SUBSTITUTO", "GRUPO", "ESCALA", "SECRETARIA", 
+        "SERVIÇO", "PORTE", "SPARK", "SITUAÇÃO"
     ]
 
-    # Agora sim aplicamos os filtros usando o df_base
-    df_supervisao = df_base[df_base[col_posto].isin(postos_supervisao)]
-    df_cg = df_base[df_base[col_setor] == "CORPO DA GUARDA"]
-    df_12x60 = df_base[df_base[col_escala] == "12X60"]
-    
-    # Filtros por Grupo
-    df_alpha = df_base[df_base[col_grupo] == "A"]
-    df_bravo = df_base[df_base[col_grupo] == "B"]
-    df_charlie = df_base[df_base[col_grupo] == "C"]
-    df_delta = df_base[df_base[col_grupo] == "D"]
+    # Limpeza e conversão para String (Trata os menus suspensos vazios)
+    for col in df.columns:
+        df[col] = df[col].fillna("").astype(str).str.strip()
 
-    # --- INTERFACE EM ABAS ---
-    st.title("🛡️ Gestão de Efetivo - Visualização Operacional")
+    # 2. TRATAMENTO DE PORTE E SPARK (Substitui suas fórmulas PROCX/SEERRO)
+    # No Python, se o valor na coluna for igual à matrícula ou não estiver vazio, marcamos como SIM
+    df['PORTE'] = df.apply(lambda x: "SIM" if x['PORTE'] != "" and x['PORTE'] != "NÃO" else "NÃO", axis=1)
+    df['SPARK'] = df.apply(lambda x: "SIM" if x['SPARK'] != "" and x['SPARK'] != "NÃO" else "NÃO", axis=1)
+
+    # 3. FILTRAGEM DINÂMICA (Barra Lateral)
+    st.sidebar.header("⚙️ Filtros")
+    lista_setores = sorted(df["SETOR"].unique())
+    setores_escolhidos = st.sidebar.multiselect(
+        "Filtrar Setores:", options=lista_setores, 
+        default=[s for s in ['ÁREA S4', 'CORPO DA GUARDA'] if s in lista_setores]
+    )
     
-    nomes_abas = ["SUPERVISÃO", "CORPO DA GUARDA", "ESCALA 12X60", "ALPHA", "BRAVO", "CHARLIE", "DELTA"]
-    abas = st.tabs(nomes_abas)
+    df_base = df[df["SETOR"].isin(setores_escolhidos)].copy()
+
+    # --- DEFINIÇÃO DAS REGRAS DE NEGÓCIO ---
+    
+    # Lista de postos exclusivos da Supervisão
+    postos_exclusivos_sup = [
+        "VTR DE APOIO - AS4", "VTR DO ENCARREGADO - AS4", 
+        "ENCARREGADO(A) - AS4", "SUPERVISOR(A) CHS"
+    ]
+
+    # Lista de escalas que compõem o grupo 12x60 (conforme sua solicitação)
+    escalas_12x60 = [
+        "24H X 72H - DIUTURNO", "12H X 36H - DIURNO", "6H - 07:00 ÀS 13:00",
+        "8H - 08:00 ÀS 17:00", "12H X 60H - NOTURNO", "6H - 13:00 ÀS 19:00",
+        "12H X 60H - DIURNO", "6H - 09:00 ÀS 15:00", "6H - 15:00 ÀS 21:00"
+    ]
+
+    # --- CRIAÇÃO DOS DATAFRAMES FILTRADOS ---
+    
+    # Supervisão (Ordenado por Grupo)
+    df_supervisao = df_base[df_base["POSTO"].isin(postos_exclusivos_sup)].sort_values(by="GRUPO")
+
+    # Corpo da Guarda
+    df_cg = df_base[df_base["SETOR"] == "CORPO DA GUARDA"]
+
+    # Escala 12x60 (Filtrado pelos valores específicos que você passou)
+    df_12x60 = df_base[df_base["ESCALA"].isin(escalas_12x60)]
+
+    # Grupos Alpha, Bravo, Charlie, Delta (Removendo os postos de supervisão)
+    def filtrar_grupo(grupo_letra):
+        filtro = (df_base["GRUPO"] == grupo_letra) & (~df_base["POSTO"].isin(postos_exclusivos_sup))
+        return df_base[filtro]
 
     mapa_dados = {
         "SUPERVISÃO": df_supervisao,
         "CORPO DA GUARDA": df_cg,
         "ESCALA 12X60": df_12x60,
-        "ALPHA": df_alpha,
-        "BRAVO": df_bravo,
-        "CHARLIE": df_charlie,
-        "DELTA": df_delta
+        "ALPHA": filtrar_grupo("A"),
+        "BRAVO": filtrar_grupo("B"),
+        "CHARLIE": filtrar_grupo("C"),
+        "DELTA": filtrar_grupo("D")
     }
 
-    for i, nome_aba in enumerate(nomes_abas):
+    # --- INTERFACE ---
+    st.title("🛡️ Gestão de Efetivo")
+    
+    abas = st.tabs(list(mapa_dados.keys()))
+
+    for i, (nome_aba, dados_aba) in enumerate(mapa_dados.items()):
         with abas[i]:
-            dados_aba = mapa_dados[nome_aba]
-            st.subheader(f"Efetivo: {nome_aba}")
-            
+            st.subheader(f"Lista: {nome_aba}")
             if not dados_aba.empty:
+                # Exibe apenas as colunas na ordem exata solicitada
                 st.dataframe(
-                    dados_aba[[col_matricula, col_nome, col_posto, col_grupo, col_escala]], 
+                    dados_aba[colunas_ordem], 
                     hide_index=True, 
                     use_container_width=True
                 )
-                st.caption(f"Total nesta guia: {len(dados_aba)} servidores")
+                st.caption(f"Total: {len(dados_aba)} servidores")
             else:
-                st.info(f"Nenhum registro encontrado para {nome_aba} nos setores selecionados.")
+                st.info("Nenhum registro para esta categoria.")
 
 except Exception as e:
-    st.error(f"Erro ao processar filtros: {e}")
+    st.error(f"Erro na implementação: {e}")
