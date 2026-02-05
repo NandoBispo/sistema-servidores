@@ -315,10 +315,15 @@ try:
 
     # Ordem das colunas que você solicitou para exibição
     colunas_ordem = [
-        "MAT. A", "MAT. N", "NOME", "CELULAR", "SETOR", "POSTO", 
-        "MAT.A SUB", "SUBSTITUTO", "GRUPO", "ESCALA", "SECRETARIA", 
+        "MAT.A", "MAT.N", "NOME", "CELULAR", "SETOR", "POSTO", 
+        "GRUPO", "ESCALA", "SECRETARIA", 
         "SERVIÇO", "PORTE", "SPARK", "SITUAÇÃO"
     ]
+    # colunas_ordem = [
+    #     "MAT.A", "MAT.N", "NOME", "CELULAR", "SETOR", "POSTO", 
+    #     "MAT.A SUB", "SUBSTITUTO", "GRUPO", "ESCALA", "SECRETARIA", 
+    #     "SERVIÇO", "PORTE", "SPARK", "SITUAÇÃO"
+    # ]
 
     # Limpeza e conversão para String (Trata os menus suspensos vazios)
     for col in df.columns:
