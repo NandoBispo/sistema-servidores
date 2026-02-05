@@ -98,19 +98,45 @@ try:
     df = conn.read(spreadsheet=url_planilha, ttl=5)
     
     # Padronização de Colunas
-    df.columns = df.columns.str.strip().str.upper()
+    # df.columns = df.columns.str.strip().str.upper()
     
-    # Definição das variáveis de coluna (incluindo ESCALA)
-    col_setor = 'SETOR' 
-    col_grupo = 'GRUPO' 
-    col_matricula = 'MAT.N'
-    col_nome = 'NOME'
-    col_posto = 'POSTO'
-    col_escala = 'ESCALA' # Nova variável solicitada
+    # # Definição das variáveis de coluna (incluindo ESCALA)
+    # col_setor = 'SETOR' 
+    # col_grupo = 'GRUPO' 
+    # col_matricula = 'MAT.N'
+    # col_nome = 'NOME'
+    # col_posto = 'POSTO'
+    # col_escala = 'ESCALA' # Nova variável solicitada
 
-    # Limpeza de dados (converte para string e remove espaços)
-    for col in [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]:
-        df[col] = df[col].fillna("").astype(str).str.strip()
+    # # Limpeza de dados (converte para string e remove espaços)
+    # for col in [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]:
+    #     df[col] = df[col].fillna("").astype(str).str.strip()
+    # ... (conexão e padronização das colunas mantidas)
+    
+    # --- FILTRAGEM DINÂMICA NA BARRA LATERAL ---
+    st.sidebar.header("⚙️ Filtros de Acesso")
+    
+    # Busca todos os setores únicos da planilha para criar o menu
+    lista_setores = sorted(df[col_setor].unique())
+    
+    # Caixa de seleção múltipla (Multiselect)
+    setores_escolhidos = st.sidebar.multiselect(
+        "Selecione o(s) Setor(es):",
+        options=lista_setores,
+        default=[s for s in ['ÁREA S4', 'CORPO DA GUARDA'] if s in lista_setores]
+    )
+
+    # Filtragem Base: Tudo o que fizermos abaixo será baseado APENAS nos setores escolhidos
+    df_base = df[df[col_setor].isin(setores_escolhidos)].copy()
+
+    # --- LÓGICA DE FILTRAGEM PERSONALIZADA (Baseada no df_base) ---
+    # 1. Guia SUPERVISÃO
+    df_supervisao = df_base[df_base[col_posto].isin(postos_supervisao)]
+
+    # 2. Guia CORPO DA GUARDA
+    df_cg = df_base[df_base[col_setor] == "CORPO DA GUARDA"]
+
+    # ... (continue com os filtros df_alpha, df_bravo, etc., usando df_base)
 
     # --- LÓGICA DE FILTRAGEM PERSONALIZADA ---
     
