@@ -98,19 +98,19 @@ try:
     df = conn.read(spreadsheet=url_planilha, ttl=5)
     
     # Padronização de Colunas
-    # df.columns = df.columns.str.strip().str.upper()
+    df.columns = df.columns.str.strip().str.upper()
     
-    # # Definição das variáveis de coluna (incluindo ESCALA)
-    # col_setor = 'SETOR' 
-    # col_grupo = 'GRUPO' 
-    # col_matricula = 'MAT.N'
-    # col_nome = 'NOME'
-    # col_posto = 'POSTO'
-    # col_escala = 'ESCALA' # Nova variável solicitada
+    # Definição das variáveis de coluna (incluindo ESCALA)
+    col_setor = 'SETOR' 
+    col_grupo = 'GRUPO' 
+    col_matricula = 'MAT.N'
+    col_nome = 'NOME'
+    col_posto = 'POSTO'
+    col_escala = 'ESCALA' # Nova variável solicitada
 
-    # # Limpeza de dados (converte para string e remove espaços)
-    # for col in [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]:
-    #     df[col] = df[col].fillna("").astype(str).str.strip()
+    # Limpeza de dados (converte para string e remove espaços)
+    for col in [col_setor, col_grupo, col_matricula, col_nome, col_posto, col_escala]:
+        df[col] = df[col].fillna("").astype(str).str.strip()
     # ... (conexão e padronização das colunas mantidas)
     
     # --- FILTRAGEM DINÂMICA NA BARRA LATERAL ---
